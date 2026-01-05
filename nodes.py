@@ -1,6 +1,6 @@
 from aiogram.types import Message
 from keyboards import node_keyboard
-from state import get_user_state
+from state import get_user_state, wait_for_voice
 from inventory import add_item
 
 # =====================
@@ -199,14 +199,6 @@ CAT_ACTIONS = {
     )
 }
 
-ANGEL_ACTIONS = {
-    "park_voice": (
-        "🌲 Голос парка:\n\n"
-        "«Иногда путь важнее цели.\n"
-        "Иногда ожидание — часть любви.»"
-    )
-}
-
 # =====================
 # ОТПРАВКА СЦЕН
 # =====================
@@ -214,15 +206,16 @@ ANGEL_ACTIONS = {
 async def send_node(message: Message, node_id: str):
     user = get_user_state(message.from_user.id)
 
+    # 🎤 Живой голос парка
+    if node_id == "park_voice":
+        wait_for_voice(user, "park_voice")
+        await message.answer("🌲 Парк затаил дыхание…")
+        return
+
     # локальные действия кота
     if node_id in CAT_ACTIONS:
         await message.answer(CAT_ACTIONS[node_id])
         return
-
-    if node_id in ANGEL_ACTIONS:
-        await message.answer(ANGEL_ACTIONS[node_id])
-        return
-    
 
     user["node"] = node_id
     node = NODES[node_id]
