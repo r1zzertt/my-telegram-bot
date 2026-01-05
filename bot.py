@@ -3,7 +3,8 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message, CallbackQuery
 from config import BOT_TOKEN
 from nodes import send_node
-from state import reset_user
+from state import reset_user, get_user_state
+from inventory import inventory_text
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
