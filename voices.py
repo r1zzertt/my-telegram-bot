@@ -1,9 +1,7 @@
-# voices.py
-
-ADMIN_ID = 123456789  # ← ЗАМЕНИ НА СВОЙ ID
-
-# временное хранилище голосов
 voices = {}
 
-# состояние ожидания голоса
-waiting_voice = {}
+def save_voice(key: str, file_id: str):
+    voices[key] = file_id
+
+def get_voice(key: str):
+    return voices.get(key)
