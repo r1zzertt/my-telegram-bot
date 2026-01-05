@@ -3,24 +3,21 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message, CallbackQuery
 
 from config import BOT_TOKEN, ADMIN_ID
-from nodes import send_node
-from state import reset_user, get_user_state, clear_wait
+from nodes.story import send_node
+from state import reset_user, get_user_state, clear_wait, users
 from inventory import inventory_text
-from voices import save_voice, get_voice
+from voices import save_voice
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-
 # =====================
 # /start
 # =====================
-@dp.message()
+@dp.message(commands=["start"])
 async def start_handler(message: Message):
-    if message.text == "/start":
-        reset_user(message.from_user.id)
-        await send_node(message, "start")
-
+    reset_user(message.from_user.id)
+    await send_node(message, "start")
 
 # =====================
 # КНОПКИ
@@ -42,31 +39,31 @@ async def callbacks(callback: CallbackQuery):
         node_id = callback.data.split(":")[1]
         await callback.message.delete()
         await send_node(callback.message, node_id)
-
+        return
 
 # =====================
-# СОХРАНЕНИЕ ГОЛОСА
+# /save — команда админа
 # =====================
-@dp.message()
+@dp.message(commands=["save"])
 async def save_voice_command(message: Message):
     if message.from_user.id != ADMIN_ID:
         return
 
-    if message.text and message.text.startswith("/save"):
-        key = message.text.split(" ", 1)[1]
-        admin = get_user_state(ADMIN_ID)
-        admin["wait_voice"] = key
-        await message.answer(f"🎙 Жду голос для ключа: {key}")
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        await message.answer("❗ Используй: /save park_voice")
+        return
 
+    key = args[1]
+    admin = get_user_state(ADMIN_ID)
+    admin["wait_voice"] = key
+    await message.answer(f"🎙 Жду голос для ключа: {key}")
 
 # =====================
 # ГОЛОСОВЫЕ
 # =====================
-@dp.message()
+@dp.message(content_types=["voice"])
 async def voice_handler(message: Message):
-    if not message.voice:
-        return
-
     user = get_user_state(message.from_user.id)
 
     # 🔴 ЕСЛИ ЭТО АДМИН
@@ -81,23 +78,18 @@ async def voice_handler(message: Message):
             return
 
         # 🎤 живой голос игроку
-        for uid, u in list(getattr(__import__("state"), "users").items()):
+        for uid, u in users.items():
             if u.get("wait_voice"):
-                await bot.send_voice(
-                    uid,
-                    message.voice.file_id
-                )
+                await bot.send_voice(uid, message.voice.file_id)
                 clear_wait(u)
                 await message.answer("✅ Голос отправлен ей")
                 return
-
 
 # =====================
 # ЗАПУСК
 # =====================
 async def main():
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     asyncio.run(main())
