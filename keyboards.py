@@ -1,12 +1,22 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-def node_keyboard(actions: dict):
+def node_keyboard(actions: dict, show_inventory=True):
     keyboard = []
-    for text, node_id in actions.items():
+
+    for text, data in actions.items():
         keyboard.append([
             InlineKeyboardButton(
                 text=text,
-                callback_data=f"node:{node_id}"
+                callback_data=data
             )
         ])
+
+    if show_inventory:
+        keyboard.append([
+            InlineKeyboardButton(
+                text="🎒 Инвентарь",
+                callback_data="inventory"
+            )
+        ])
+
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
