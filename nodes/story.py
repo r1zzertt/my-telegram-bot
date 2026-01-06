@@ -1506,6 +1506,7 @@ async def send_node(message: Message, node_id: str):
         await message.answer("🌲 Парк затаил дыхание…")
         return
 
+    # --- локальные действия ---
     if node_id in CAT_ACTIONS:
         await message.answer(CAT_ACTIONS[node_id])
         # возвращаем пользователя обратно в хаб кота
@@ -1513,9 +1514,9 @@ async def send_node(message: Message, node_id: str):
         await message.answer(
             hub["text"],
             reply_markup=node_keyboard(hub["actions"])
-    )
+        )
         return
-        
+
     if node_id in TREE_ACTIONS:
         await message.answer(TREE_ACTIONS[node_id])
         return
@@ -1544,8 +1545,8 @@ async def send_node(message: Message, node_id: str):
         else:
             await message.answer("Цветка больше нет 🌫")
         return
-        
-    # --- защита ---
+
+    # --- основной узел ---
     node = NODES.get(node_id)
     if not node:
         await message.answer("Что-то пошло не так… 🌫")
