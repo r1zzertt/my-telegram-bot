@@ -1497,6 +1497,30 @@ TREE_ACTIONS = {
 async def send_node(message: Message, node_id: str):
     user = get_user_state(message.from_user.id)
 
+    # Если есть префикс "node:", убираем его для локальных действий
+    action_id = node_id.replace("node:", "")
+
+    # --- локальные действия кота ---
+    if action_id in CAT_ACTIONS:
+        await message.answer(CAT_ACTIONS[action_id])
+        # оставляем пользователя в хабе кота
+        user["node"] = "cat_hub"
+        await message.answer(
+            "Вы можете выбрать ещё что-то:",
+            reply_markup=node_keyboard(NODES["cat_hub"]["actions"])
+        )
+        return
+
+    # --- локальные действия дерева ---
+    if action_id in TREE_ACTIONS:
+        await message.answer(TREE_ACTIONS[action_id])
+        current_node = user.get("node", "tree_question_1")
+        await message.answer(
+            "Выберите действие:",
+            reply_markup=node_keyboard(NODES[current_node]["actions"])
+        )
+        return
+
     # --- служебные узлы ---
     if node_id == "act11_branch":
         if "🐶 Щенок" in user.get("inventory", []):
@@ -1508,28 +1532,6 @@ async def send_node(message: Message, node_id: str):
     if node_id == "park_voice":
         wait_for_voice(user, "park_voice")
         await message.answer("🌲 Парк затаил дыхание…")
-        return
-
-    # --- локальные действия кота ---
-    if node_id in CAT_ACTIONS:
-        await message.answer(CAT_ACTIONS[node_id])
-        # оставляем пользователя в хабе кота
-        user["node"] = "cat_hub"
-        await message.answer(
-            "Вы можете выбрать ещё что-то:",
-            reply_markup=node_keyboard(NODES["cat_hub"]["actions"])
-        )
-        return
-
-    # --- локальные действия дерева ---
-    if node_id in TREE_ACTIONS:
-        await message.answer(TREE_ACTIONS[node_id])
-        # оставляем пользователя в текущем узле дерева
-        current_node = user.get("node", "tree_question_1")
-        await message.answer(
-            "Выберите действие:",
-            reply_markup=node_keyboard(NODES[current_node]["actions"])
-        )
         return
 
     if node_id == "inventory_show":
@@ -1557,7 +1559,7 @@ async def send_node(message: Message, node_id: str):
             await message.answer("Цветка больше нет 🌫")
         return
 
-    # --- защита ---
+    # --- основной сюжет ---
     node = NODES.get(node_id)
     if not node:
         await message.answer("Что-то пошло не так… 🌫")
