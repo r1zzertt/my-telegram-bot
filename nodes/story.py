@@ -1514,7 +1514,7 @@ async def send_node(message: Message, node_id: str):
             hub["text"],
             reply_markup=node_keyboard(hub["actions"])
     )
-    return
+        return
         
     if node_id in TREE_ACTIONS:
         await message.answer(TREE_ACTIONS[node_id])
