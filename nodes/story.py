@@ -1490,22 +1490,26 @@ TREE_ACTIONS = {
 # ОТПРАВКА СЦЕН
 # =====================
 
-# =====================
-# ОТПРАВКА СЦЕН
-# =====================
-
 async def send_node(message: Message, node_id: str):
     user = get_user_state(message.from_user.id)
 
     # --- Если это действие кота ---
     if node_id in CAT_ACTIONS:
         await message.answer(CAT_ACTIONS[node_id])
-        # оставляем пользователя в хабе кота
-        user["node"] = "cat_hub"
-        # показываем кнопки снова
+        user["node"] = "cat_hub"  # остаёмся в хабе кота
         await message.answer(
             "Вы можете выбрать ещё что-то:",
             reply_markup=node_keyboard(NODES["cat_hub"]["actions"])
+        )
+        return
+
+    # --- Если это действие дерева ---
+    if node_id in TREE_ACTIONS:
+        await message.answer(TREE_ACTIONS[node_id])
+        user["node"] = "tree_question_1"  # оставляем в текущей ноде дерева
+        await message.answer(
+            "Вы можете выбрать ещё что-то:",
+            reply_markup=node_keyboard(NODES["tree_question_1"]["actions"])
         )
         return
 
