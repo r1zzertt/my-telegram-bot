@@ -20,7 +20,6 @@ dp.include_router(router)
 @router.message(Command("start"))
 async def start_handler(message: Message):
     reset_user(message.from_user.id)
-    await message.answer("Парк, который помнит🌹")
     await send_node(message, "start")
 
 # =====================
