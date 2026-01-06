@@ -1497,30 +1497,6 @@ TREE_ACTIONS = {
 async def send_node(message: Message, node_id: str):
     user = get_user_state(message.from_user.id)
 
-    # Если есть префикс "node:", убираем его для локальных действий
-    action_id = node_id.replace("node:", "")
-
-    # --- локальные действия кота ---
-    if action_id in CAT_ACTIONS:
-        await message.answer(CAT_ACTIONS[action_id])
-        # оставляем пользователя в хабе кота
-        user["node"] = "cat_hub"
-        await message.answer(
-            "Вы можете выбрать ещё что-то:",
-            reply_markup=node_keyboard(NODES["cat_hub"]["actions"])
-        )
-        return
-
-    # --- локальные действия дерева ---
-    if action_id in TREE_ACTIONS:
-        await message.answer(TREE_ACTIONS[action_id])
-        current_node = user.get("node", "tree_question_1")
-        await message.answer(
-            "Выберите действие:",
-            reply_markup=node_keyboard(NODES[current_node]["actions"])
-        )
-        return
-
     # --- служебные узлы ---
     if node_id == "act11_branch":
         if "🐶 Щенок" in user.get("inventory", []):
@@ -1534,6 +1510,32 @@ async def send_node(message: Message, node_id: str):
         await message.answer("🌲 Парк затаил дыхание…")
         return
 
+    # --- локальные действия кота ---
+    if node_id in CAT_ACTIONS:
+        # отправляем текст действия кота
+        await message.answer(CAT_ACTIONS[node_id])
+
+        # оставляем пользователя в хабе кота
+        user["node"] = "cat_hub"
+
+        # отправляем кнопки кота заново
+        await message.answer(
+            "Вы можете выбрать ещё что-то:",
+            reply_markup=node_keyboard(NODES["cat_hub"]["actions"])
+        )
+        return
+
+    # --- локальные действия дерева ---
+    if node_id in TREE_ACTIONS:
+        await message.answer(TREE_ACTIONS[node_id])
+        current_node = user.get("node", "tree_question_1")
+        await message.answer(
+            "Выберите действие:",
+            reply_markup=node_keyboard(NODES[current_node]["actions"])
+        )
+        return
+
+    # --- инвентарь ---
     if node_id == "inventory_show":
         text = inventory_text(user)
         await message.answer(
@@ -1551,21 +1553,20 @@ async def send_node(message: Message, node_id: str):
                 "🌸 Цветок тишины растворяется в ладонях.\n\n"
                 "💡 Подсказка:\n\n"
                 "Хочешь подсказку —\n"
-                "запиши кружочек любимому.\n\n"
-                "Иногда ответы приходят\n"
-                "не из игры."
+                "запиши кружочек любимому.\n"
+                "Иногда ответы приходят не из игры."
             )
         else:
             await message.answer("Цветка больше нет 🌫")
         return
 
-    # --- основной сюжет ---
+    # --- защита на случай ошибки ---
     node = NODES.get(node_id)
     if not node:
         await message.answer("Что-то пошло не так… 🌫")
         return
 
-    # --- сохранить текущий узел ---
+    # --- сохранить текущий узел пользователя ---
     user["node"] = node_id
 
     # --- сюжетные предметы ---
@@ -1575,7 +1576,7 @@ async def send_node(message: Message, node_id: str):
     if node_id == "puppy_take":
         add_item(user, "🐶 Щенок")
 
-    # --- отправка текста ---
+    # --- отправка текста узла и кнопок ---
     await message.answer(
         node["text"],
         reply_markup=node_keyboard(node.get("actions", {}))
