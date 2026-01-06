@@ -1508,15 +1508,15 @@ async def send_node(message: Message, node_id: str):
 
     # --- локальные действия ---
     if node_id in CAT_ACTIONS:
-        await message.answer(CAT_ACTIONS[node_id])
-        # возвращаем пользователя обратно в хаб кота
-        hub = NODES["cat_hub"]
-        await message.answer(
-            hub["text"],
-            reply_markup=node_keyboard(hub["actions"])
-        )
-        return
-
+    await message.answer(CAT_ACTIONS[node_id])
+    # оставляем пользователя в cat_hub, чтобы кнопки были активны
+    user["node"] = "cat_hub"
+    await message.answer(
+        "Вы можете выбрать ещё что-то:",
+        reply_markup=node_keyboard(NODES["cat_hub"]["actions"])
+    )
+    return
+    
     if node_id in TREE_ACTIONS:
         await message.answer(TREE_ACTIONS[node_id])
         return
