@@ -4,7 +4,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command
 
 from config import BOT_TOKEN, ADMIN_ID
-from nodes import send_node
+from nodes.story import send_node
 from state import reset_user, get_user_state, clear_wait
 from inventory import inventory_text
 from voices import save_voice
