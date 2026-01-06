@@ -1506,9 +1506,15 @@ async def send_node(message: Message, node_id: str):
         await message.answer("🌲 Парк затаил дыхание…")
         return
 
-    if node_id in CAT_ACTIONS:
-        await message.answer(CAT_ACTIONS[node_id])
-        return
+  if node_id in CAT_ACTIONS:
+    await message.answer(CAT_ACTIONS[node_id])
+    # возвращаем пользователя обратно в хаб кота
+    hub = NODES["cat_hub"]
+    await message.answer(
+        hub["text"],
+        reply_markup=node_keyboard(hub["actions"])
+    )
+    return
         
     if node_id in TREE_ACTIONS:
         await message.answer(TREE_ACTIONS[node_id])
