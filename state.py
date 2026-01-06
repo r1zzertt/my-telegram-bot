@@ -1,23 +1,13 @@
-users = {}
+# хранение состояния пользователей
+USERS = {}
 
-def reset_user(user_id: int):
-    users[user_id] = {
-        "node": "start",
-        "inventory": [],
-        "wait_voice": None,
-        "flags": {}
-    }
+def get_user_state(user_id):
+    if user_id not in USERS:
+        USERS[user_id] = {"inventory": [], "node": "start", "wait_voice": None}
+    return USERS[user_id]
 
-def get_user_state(user_id: int):
-    return users.setdefault(user_id, {
-        "node": "start",
-        "inventory": [],
-        "wait_voice": None,
-        "flags": {}
-    })
+def reset_user(user_id):
+    USERS[user_id] = {"inventory": [], "node": "start", "wait_voice": None}
 
 def wait_for_voice(user, key):
     user["wait_voice"] = key
-
-def clear_wait(user):
-    user["wait_voice"] = None
