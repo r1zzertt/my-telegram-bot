@@ -18,11 +18,16 @@ dp.include_router(router)
 # =====================
 # /start
 # =====================
+
 @router.message(Command("start"))
 async def start_handler(message: Message):
-    reset_user(message.from_user.id)
-    await message.answer("Парк, который помнит🌹")
-    await send_node(message, "start")
+    try:
+        reset_user(message.from_user.id)
+        await message.answer("Парк, который помнит🌹")
+        await send_node(message, "start")
+    except Exception as e:
+        await message.answer(f"Ошибка: {e}")
+
 
 # =====================
 # CALLBACKS
