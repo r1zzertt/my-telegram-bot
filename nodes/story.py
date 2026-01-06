@@ -1490,6 +1490,10 @@ TREE_ACTIONS = {
 # ОТПРАВКА СЦЕН
 # =====================
 
+# =====================
+# ОТПРАВКА СЦЕН
+# =====================
+
 async def send_node(message: Message, node_id: str):
     user = get_user_state(message.from_user.id)
 
@@ -1506,19 +1510,26 @@ async def send_node(message: Message, node_id: str):
         await message.answer("🌲 Парк затаил дыхание…")
         return
 
-    # --- локальные действия ---
+    # --- локальные действия кота ---
     if node_id in CAT_ACTIONS:
-    await message.answer(CAT_ACTIONS[node_id])
-    # оставляем пользователя в cat_hub, чтобы кнопки были активны
-    user["node"] = "cat_hub"
-    await message.answer(
-        "Вы можете выбрать ещё что-то:",
-        reply_markup=node_keyboard(NODES["cat_hub"]["actions"])
-    )
-    return
-    
+        await message.answer(CAT_ACTIONS[node_id])
+        # оставляем пользователя в хабе кота
+        user["node"] = "cat_hub"
+        await message.answer(
+            "Вы можете выбрать ещё что-то:",
+            reply_markup=node_keyboard(NODES["cat_hub"]["actions"])
+        )
+        return
+
+    # --- локальные действия дерева ---
     if node_id in TREE_ACTIONS:
         await message.answer(TREE_ACTIONS[node_id])
+        # оставляем пользователя в текущем узле дерева
+        current_node = user.get("node", "tree_question_1")
+        await message.answer(
+            "Выберите действие:",
+            reply_markup=node_keyboard(NODES[current_node]["actions"])
+        )
         return
 
     if node_id == "inventory_show":
@@ -1546,7 +1557,7 @@ async def send_node(message: Message, node_id: str):
             await message.answer("Цветка больше нет 🌫")
         return
 
-    # --- основной узел ---
+    # --- защита ---
     node = NODES.get(node_id)
     if not node:
         await message.answer("Что-то пошло не так… 🌫")
