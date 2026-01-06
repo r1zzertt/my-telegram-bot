@@ -9,6 +9,7 @@ from state import reset_user, get_user_state, wait_for_voice
 from inventory import inventory_text, add_item, remove_item
 from voices import save_voice
 from keyboards import node_keyboard
+from send_node import send_node  # <- функция вынесена сюда
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
@@ -18,7 +19,6 @@ dp.include_router(router)
 # =====================
 # /start
 # =====================
-
 @router.message(Command("start"))
 async def start_handler(message: Message):
     try:
@@ -27,7 +27,6 @@ async def start_handler(message: Message):
         await send_node(message, "start")
     except Exception as e:
         await message.answer(f"Ошибка: {e}")
-
 
 # =====================
 # CALLBACKS
@@ -69,46 +68,6 @@ async def voice_handler(message: Message):
         await message.answer("🎙 Голос сохранён")
     else:
         await message.answer("🌫 Голос принят")
-
-# =====================
-# SEND NODE
-# =====================
-async def send_node(message: Message, node_id: str):
-    user = get_user_state(message.from_user.id)
-
-    if node_id == "act11_branch":
-        if "🐶 Щенок" in user.get("inventory", []):
-            await send_node(message, "act11_with_puppy")
-        else:
-            await send_node(message, "act11_without_puppy")
-        return
-
-    if node_id in CAT_ACTIONS:
-        await message.answer(CAT_ACTIONS[node_id])
-        hub = NODES["cat_hub"]
-        await message.answer(hub["text"], reply_markup=node_keyboard(hub["actions"]))
-        return
-
-    if node_id in TREE_ACTIONS:
-        await message.answer(TREE_ACTIONS[node_id])
-        return
-
-    node = NODES.get(node_id)
-    if not node:
-        await message.answer("Что-то пошло не так… 🌫")
-        return
-
-    user["node"] = node_id
-
-    if node_id == "cat_hub":
-        add_item(user, "🌸 Цветок тишины")
-    if node_id == "puppy_take":
-        add_item(user, "🐶 Щенок")
-
-    await message.answer(
-        node["text"],
-        reply_markup=node_keyboard(node.get("actions", {}))
-    )
 
 # =====================
 # RUN BOT
